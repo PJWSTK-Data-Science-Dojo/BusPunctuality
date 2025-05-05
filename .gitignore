@@ -1,3 +1,4 @@
 .env
 .idea
 training/wandb
+/datasets
