@@ -4,3 +4,5 @@ training/wandb
 graph_nn/wandb
 graph_nn/output
 graph_nn/checkpoints
+/venv
+/datasets
