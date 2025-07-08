@@ -6,4 +6,3 @@ graph_nn/output
 graph_nn/checkpoints
 /venv
 /datasets
-/data
