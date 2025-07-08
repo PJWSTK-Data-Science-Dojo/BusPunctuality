@@ -18,7 +18,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
 import polars as pl
 
-from model import EarlyStopping
+from graph_nn.model import EarlyStopping
 
 
 class Trainer:
@@ -54,10 +54,10 @@ class Trainer:
             weight_decay=weight_decay
         )
         self.criterion = nn.MSELoss()
-
-        wandb.log(
-            {"learning_rate": learning_rate, "weight_decay": weight_decay, "optimizer": "Adam", "loss_function": "MSELoss"}
-        )
+        if wandb_run:
+            wandb.log(
+                {"learning_rate": learning_rate, "weight_decay": weight_decay, "optimizer": "Adam", "loss_function": "MSELoss"}
+            )
 
         self.train_loader = DataLoader(train_data, batch_size=32, shuffle=False)
         assert self.train_loader is not None, "train_loader is None"
@@ -123,6 +123,7 @@ class Trainer:
                 'val_loss': val_loss,
             }, checkpoint_path)
 
+
             print(f"Checkpoint saved: {checkpoint_path}")
 
             early_stopping(val_loss, self.model)
@@ -130,6 +131,8 @@ class Trainer:
                 print(f"Early stopping at epoch {epoch}. Best validation loss: {early_stopping.best_score:.4f}")
                 break
 
+        #todo log in run because it's hard to check which one is correct in artifacts
+        # todo save whole model class
         torch.save(self.model.state_dict(), "output/model_weights.pkl")
         artifact = wandb.Artifact("bus_delay_model", type="model")
         artifact.add_file("output/model_weights.pkl")
