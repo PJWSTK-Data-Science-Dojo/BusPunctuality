@@ -65,4 +65,5 @@ trainer_obj = Trainer(model=model)
 dataloader = DataLoader(data_list, batch_size=32, shuffle=False)
 
 out_df = trainer_obj.predict_with_debug(dataloader)
-print(out_df.preds.to_list())g
+print(out_df)
+print(out_df["preds"].to_list())
