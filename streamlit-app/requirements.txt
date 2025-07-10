@@ -13,3 +13,5 @@ torch_geometric
 seaborn
 wandb
 plotly
+xgboost
+git+https://github.com/pycaret/pycaret.git@3.4#egg=pycaret

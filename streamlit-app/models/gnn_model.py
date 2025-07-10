@@ -20,7 +20,6 @@ logging.basicConfig(level=logging.WARNING)
 
 class GNNModel(BaseModel):
     def __init__(self, gnn_model_path:str, edge_index_path:str, stop_id_map_path:str, line_encoding_path:str, edge_list_path:str, scaler_gnn_path:str):
-        print(line_encoding_path)
         self.model_path = gnn_model_path
         self.edge_index_path = edge_index_path
         self.stop_id_map_path = stop_id_map_path
@@ -90,5 +89,4 @@ class GNNModel(BaseModel):
         out_df = self.trainer_obj.predict_with_debug(dataloader)
         if out_df.shape[0] == 0:
             return None
-        print(out_df["preds"].to_list()[0])
         return out_df["preds"].to_list()[0]

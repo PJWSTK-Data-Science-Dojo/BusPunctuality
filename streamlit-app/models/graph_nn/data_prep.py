@@ -115,7 +115,7 @@ class DataPreparation:
 
         # Print null statistics
         null_stats = df.select(pl.all().is_null().sum()).to_dicts()[0]
-        print("Null statistics:", null_stats)
+        # print("Null statistics:", null_stats)
 
         # Handle missing values
         # print przystanek numer and nazwa where lat lon is null
@@ -135,18 +135,18 @@ class DataPreparation:
         # df = df.filter(~pl.col("Primary Key").is_in(trip_ids_with_nulls))
         # print(f"After removing trips with nulls, number of records: {df.shape[0]}")
 
-        print(f"Before removing trips with nulls, number of records: {df.shape[0]}")
+        # print(f"Before removing trips with nulls, number of records: {df.shape[0]}")
         df = df.drop_nulls()
-        print(f"After removing trips with nulls, number of records: {df.shape[0]}")
+        # print(f"After removing trips with nulls, number of records: {df.shape[0]}")
 
         # remove extreme delay values
         trips_with_extreme_delay_values = df.filter(
             (pl.col("delay") < -3000) | (pl.col("delay") > 3000)
         )["Primary Key"].unique()
-        print(f"Found {len(trips_with_extreme_delay_values)} trips with extreme delay values.")
-        print(f"Before removing trips with extreme delay values, number of records: {df.shape[0]}")
+        # print(f"Found {len(trips_with_extreme_delay_values)} trips with extreme delay values.")
+        # print(f"Before removing trips with extreme delay values, number of records: {df.shape[0]}")
         df = df.filter(~pl.col("Primary Key").is_in(trips_with_extreme_delay_values))
-        print(f"After removing trips with extreme delay values, number of records: {df.shape[0]}")
+        # print(f"After removing trips with extreme delay values, number of records: {df.shape[0]}")
 
         # Convert categorical variables
         df = df.with_columns([
@@ -200,9 +200,9 @@ class DataPreparation:
         ])
 
 
-        print(f"Before removing trips with nulls, number of records: {df.shape[0]}")
+        # print(f"Before removing trips with nulls, number of records: {df.shape[0]}")
         df = df.drop_nulls()
-        print(f"After removing trips with nulls, number of records: {df.shape[0]}")
+        # print(f"After removing trips with nulls, number of records: {df.shape[0]}")
 
         # Convert categorical variables
         df = df.with_columns([
@@ -300,7 +300,7 @@ class DataPreparation:
                 edge_list.append((stops[i], stops[i + 1]))
 
         edge_list = list(set(edge_list))  # remove duplicates
-        print(f"Number of edges: {len(edge_list)}")
+        # print(f"Number of edges: {len(edge_list)}")
         return edge_list, stop_id_map
 
     def prepare_edge_index(self, df, X, edge_list: list[tuple[int, int]] | None = None, stop_id_map: dict[int, int] | None = None, stop_mapping_out_file="stop_mapping.json"):
@@ -345,7 +345,7 @@ class DataPreparation:
             })
         #make boxplot of records per trip id
 
-        print(f"Number of trips: {grouped.len()}")
+        # print(f"Number of trips: {grouped.len()}")
         for trip_id, group_df in tqdm(grouped, desc="Processing trips", total=grouped.len().shape[0]):
             # print(f"Processing trip {trip_id} with {len(group_df)} records.")
             group_dict = group_df.to_dict(as_series=False)
@@ -386,7 +386,7 @@ class DataPreparation:
         # for date in sorted(date_to_data.keys()):
         #     data_list.append(date_to_data[date])
 
-        print(f"Number of graphs: {len(data_list)}")
+        # print(f"Number of graphs: {len(data_list)}")
 
         return data_list
 
@@ -412,7 +412,7 @@ class DataPreparation:
         val_data = data_list[train_end:val_end]
         test_data = data_list[val_end:]
 
-        print(f"Train size: {len(train_data)}, Validation size: {len(val_data)}, Test size: {len(test_data)}")
+        # print(f"Train size: {len(train_data)}, Validation size: {len(val_data)}, Test size: {len(test_data)}")
         self.wandb_run.log({
             "train_size": len(train_data),
             "val_size": len(val_data),

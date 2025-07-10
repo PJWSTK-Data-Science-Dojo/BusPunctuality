@@ -54,7 +54,7 @@ class FCNNModel(BaseModel):
         # return features
 
     def predict(self, features):
-        return 67.8
+        return 867.8
         # scaled = self.scaler_X.transform([features])
         # input_tensor = torch.tensor(scaled, dtype=torch.float32)
         # with torch.no_grad():

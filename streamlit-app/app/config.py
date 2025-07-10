@@ -5,6 +5,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 MODEL_DIR = os.path.join(BASE_DIR, "fnn")
 GRAPH_NN_MODEL_DIR = os.path.join(BASE_DIR, "streamlit-app\models\graph_nn\model_predict")
 DATA_DIR = os.path.join(BASE_DIR, "datasets")
+XGB_MODEL_DIR = os.path.join(BASE_DIR, "xgb")
 
 FCNN_PATHS = {
     "model_path": os.path.join(MODEL_DIR, "fcnn_model.pth"),
@@ -25,3 +26,12 @@ GNN_PATHS = {
 
 }
 
+
+
+XGB_PATHS = {
+    "model_path":    os.path.join(XGB_MODEL_DIR, "xgboost"), # without .pkl extension because pycaret automaticly add extension suffix
+    "scaler_x_path": None,
+    "scaler_y_path": None,
+    "encoder_path":  None,
+    "data_path":     os.path.join(XGB_MODEL_DIR, "triplet_to_seq.csv"),
+}
