@@ -7,3 +7,9 @@ joblib
 polars
 geopy
 scikit-learn
+torch
+pypickle
+torch_geometric
+seaborn
+wandb
+plotly

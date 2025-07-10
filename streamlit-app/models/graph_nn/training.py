@@ -18,7 +18,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
 import polars as pl
 
-from graph_nn.model import EarlyStopping
+from models.graph_nn.model import EarlyStopping
 
 
 class Trainer:
@@ -159,6 +159,8 @@ class Trainer:
         with torch.no_grad():
             for batch in self.test_loader:
                 batch = batch.to(self.device)
+                print(batch.x)
+                print(batch.edge_index)
                 out = self.model(batch.x, batch.edge_index)
 
                 mask = ~torch.isnan(batch.y)
@@ -205,7 +207,10 @@ class Trainer:
 
         with torch.no_grad():
             for batch in data_loader:
+                print(batch)
                 batch = batch.to(self.device)
+                print(batch.x)
+                print(batch.edge_index)
                 out = self.model(batch.x, batch.edge_index)
 
                 mask = ~torch.isnan(batch.y)
@@ -232,7 +237,6 @@ class Trainer:
                     all_preds.append(pr)
                 else:
                     all_preds.extend(preds.tolist())
-
 
         final_df = pl.DataFrame({
             "arrival_hour": all_arrival_hours,

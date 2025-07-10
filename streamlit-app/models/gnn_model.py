@@ -1,21 +1,98 @@
+# instance of gnn model
+from datetime import datetime
+
+import joblib
+
 from models.base_model import BaseModel
-import json
-import numpy as np
+import pandas as pd
+import torch
+from torch_geometric.loader import DataLoader
+
+from models.graph_nn.data_prep import DataPreparation
+from models.graph_nn.model import GNN
+from models.graph_nn.training import Trainer
+import pickle
+from torch_geometric.data import Data
+import polars as pl
+import logging
 
 class GNNModel(BaseModel):
+    def __init__(self, gnn_model_path:str, edge_index_path:str, stop_id_map_path:str, line_encoding_path:str, edge_list_path:str, scaler_gnn_path:str):
+        print(line_encoding_path)
+        self.model_path = gnn_model_path
+        self.edge_index_path = edge_index_path
+        self.stop_id_map_path = stop_id_map_path
+        self.line_encoding_path = line_encoding_path
+        self.edge_list_path = edge_list_path
+        self.scaler_gnn_path = scaler_gnn_path
+        self.line_mapping = None
+        self.model = None
+        self.state_dict = None
+        self.stop_id_map = None
+        self.edge_index = None
+        self.scaler = None
+        self.trainer_obj = None
+        self.logger = logging.getLogger(__name__)
 
-    def __init__(self, model_path, scaler_x_path, scaler_y_path, encoder_path, data_path):
-        self.model_path = model_path
-        self.scaler_x_path = scaler_x_path
-        self.scaler_y_path = scaler_y_path
-        self.encoder_path = encoder_path
-        self.data_path = data_path
+    def load(self, ):
+        self.line_mapping = pd.read_csv(self.line_encoding_path)
+        self.model = GNN(
+            in_channels=11,
+            hidden_channels=32,
+            out_channels=1
+        )
 
-    def load(self):
-        self.loaded = True  # Symulacja załadowania modelu
+        self.state_dict = torch.load(self.model_path)
 
-    def prepare_input(self, start_stop, end_stop, line, date_input, time_input):
-        return []
+        self.model.load_state_dict(self.state_dict)
+        self.model.eval()
+        self.stop_id_map = pickle.load(open(self.stop_id_map_path, "rb"))
+        self.edge_index = pickle.load(open(self.edge_index_path, "rb"))
+        self.scaler = joblib.load(open(self.scaler_gnn_path, "rb"))
 
-    def predict(self, features):
-        return 56.0  # Mocked delay in seconds
+
+    def prepare_input(self, start, end, line, date_input, time_input):
+        if line not in self.line_mapping['line_name'].values:
+            raise ValueError(f"Gnn model can't predict for line {line}.")
+
+        data_prep_obj = DataPreparation(data_path="")
+        row_dict = {
+            "Dzien": date_input,
+            "Linia": line,
+            "Zadanie": "",
+            "Lp przystanku": 1, #todo change
+            "Przystanek nazwa": start,
+            "Przystanek numer": 2169,
+            "Rozkladowy czas przyjazdu": datetime(2023, 1, 1, 4, 11, 0),
+            "Rozkladowy czas odjazdu": datetime(2023, 1, 1, 4, 11, 0),
+            "Rzeczywisty czas przyjazdu": datetime(2023, 1, 1, 4, 10, 7),
+            "Rzeczywisty czas odjazdu": datetime(2023, 1, 1, 4, 10, 7),
+            "Rodzaj detekcji": 1,
+            "Primary Key": "a",
+            "stop_desc": start,
+            "stop_lat": 54.39869, # dodo change
+            "stop_lon": 18.67434,
+            "delay": 0,
+            "scheduled_trip_start": datetime(2023, 1, 1, 4, 11, 0,
+                                             ),
+        }
+        df = pl.DataFrame([row_dict])
+        self.logger.debug(f"Data loaded successfully., shape: {df.shape}")
+        line_encodings = {row['line_name']: row['line_encoded'] for _, row in self.line_mapping.iterrows()}
+        df = data_prep_obj.preprocess_data_inference(df, line_encodings=line_encodings)
+        self.logger.debug(f"Data preprocessed successfully., shape: {df.shape}")
+
+        X, y = data_prep_obj.prepare_features_and_target(df)
+        self.logger.debug(f"Features and target prepared successfully., X shape: {X.shape}, y shape: {y.shape}")
+        data_list = data_prep_obj.prepare_graph_features(df, self.stop_id_map, self.edge_index)
+
+        self.trainer_obj = Trainer(model=self.model)
+        dataloader = DataLoader(data_list, batch_size=32, shuffle=False)
+        return dataloader
+
+    def predict(self, dataloader):
+        out_df = self.trainer_obj.predict_with_debug(dataloader)
+        if out_df.empty:
+            return None
+
+        return out_df["preds"].to_list()[0]

@@ -6,3 +6,7 @@ graph_nn/output
 graph_nn/checkpoints
 /venv
 /datasets
+streamlit-app/models/__pycache__
+streamlit-app/models/graph_nn/__pycache__
+streamlit-app/repository/__pycache__
+streamlit-app/utils/__pycache__
