@@ -3,7 +3,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 MODEL_DIR = os.path.join(BASE_DIR, "fnn")
-GRAPH_NN_MODEL_DIR = os.path.join(BASE_DIR, "models\graph_nn\model_predict")
+GRAPH_NN_MODEL_DIR = os.path.join(BASE_DIR, "streamlit-app\models\graph_nn\model_predict")
 DATA_DIR = os.path.join(BASE_DIR, "datasets")
 
 FCNN_PATHS = {

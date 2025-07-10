@@ -2,7 +2,7 @@ import streamlit as st
 from models.fcnn_model import FCNNModel
 from models.gnn_model import GNNModel
 from models.xgb_model import XGBModel
-from app.config import FCNN_PATHS
+from app.config import FCNN_PATHS, GNN_PATHS
 from datetime import date, datetime
 import json
 
@@ -63,17 +63,19 @@ if start == end and start != "":
     st.warning("🚫 Początkowy i końcowy przystanek nie mogą być takie same.")
 
 fcnn_model = FCNNModel(**FCNN_PATHS)
-gnn_model = GNNModel(**FCNN_PATHS)
+gnn_model = GNNModel(**GNN_PATHS)
 xgb_model = XGBModel(**FCNN_PATHS)
 
 if st.button("Predict") and start != end:
     for model in ["GNN", "XGB", "FCNN"]:
         st.session_state[f"{model}_state"] = {"status": "loading"}
+        gnn_model.load()
 
     try:
         features = fcnn_model.prepare_input(start, end, line, date_input, time_input)
+        features_gnn = gnn_model.prepare_input(start, end, line, date_input, time_input)
 
-        predict_single_model("GNN", gnn_model, features, "GNN_state")
+        predict_single_model("GNN", gnn_model, features_gnn, "GNN_state")
         predict_single_model("XGB", xgb_model, features, "XGB_state")
         predict_single_model("FCNN", fcnn_model, features, "FCNN_state")
 

@@ -13,7 +13,6 @@ from torch_geometric.data import Data
 import wandb
 from tqdm import tqdm
 
-from models.graph_nn.plotting_utils import plot_basic_graph
 
 
 class DataPreparation:
@@ -318,74 +317,6 @@ class DataPreparation:
             [stop_id_map[dst] for src, dst in edge_list]
         ], dtype=torch.long)
         return edge_index
-
-    def plot_graph(self, df, edge_list_ids):
-        stop_id_to_stop_name_dict = dict(zip(df['Przystanek numer'], df['Przystanek nazwa']))
-        stop_id_to_name_latlon = {
-            stop_id: (name, (lat, lon))
-            for stop_id, name, lat, lon in zip(
-                df['Przystanek numer'],
-                df['Przystanek nazwa'],
-                df['stop_lat'],
-                df['stop_lon']
-            )
-        }
-
-        fig = plot_basic_graph(edge_list_ids=edge_list_ids,
-                         stop_id_to_name_latlon=stop_id_to_name_latlon)
-
-        wandb.log({"bus_graph_map": wandb.Plotly(fig)})
-
-    # def prepare_graph_features(self, df, stop_id_map, edge_index):
-    #     """
-    #     Prepare graph features for each trip.
-    #     :param df: DataFrame containing the data.
-    #     :param stop_id_map: Mapping of stop IDs to indices.
-    #     :param edge_index: Edge index tensor.
-    #     :return: List of Data objects.
-    #     """
-    #
-    #     data_list = []
-    #
-    #     df = df.sort(['scheduled_trip_start'])
-    #     grouped = df.group_by("Primary Key", maintain_order=True)
-    #
-    #     trip_counts = grouped.agg(pl.count()).to_pandas()
-    #     wandb.log({
-    #         "trip_counts": wandb.Table(
-    #             data=trip_counts,
-    #             columns=["trip_id", "records_per_trip"]
-    #         )
-    #     })
-    #
-    #
-    #     for trip_id, group_df in tqdm(grouped, desc="Processing trips"):
-    #         group_df = group_df.filter(pl.col("Przystanek numer").is_in(list(stop_id_map.keys())))
-    #
-    #         if group_df.height == 0:
-    #             continue
-    #
-    #         # map stop number to index
-    #         group_df = group_df.with_columns([
-    #             pl.col("Przystanek numer").replace(stop_id_map).alias("stop_idx")
-    #         ])
-    #
-    #         # convert features to tensor: shape [num_nodes, num_features]
-    #         x_values = torch.tensor(group_df.select(self.features).to_numpy(), dtype=torch.float32)
-    #
-    #         # create x tensor (num_total_nodes, num_features), fill with zeros
-    #         x = torch.zeros(len(stop_id_map), len(self.features), dtype=torch.float32)
-    #         x[group_df["stop_idx"].to_numpy()] = x_values
-    #
-    #         # delay target: shape [num_total_nodes]
-    #         y = torch.full((len(stop_id_map),), float("nan"), dtype=torch.float32)
-    #         y[group_df["stop_idx"].to_numpy()] = torch.tensor(group_df["delay"].to_numpy(), dtype=torch.float32)
-    #
-    #         data = Data(x=x, edge_index=edge_index, y=y)
-    #         data_list.append(data)
-    #
-    #     print(f"Number of graphs: {len(data_list)}")
-    #     return data_list
 
     def prepare_graph_features(self, df, stop_id_map, edge_index):
         """

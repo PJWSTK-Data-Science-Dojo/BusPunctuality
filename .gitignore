@@ -10,3 +10,5 @@ streamlit-app/models/__pycache__
 streamlit-app/models/graph_nn/__pycache__
 streamlit-app/repository/__pycache__
 streamlit-app/utils/__pycache__
+streamlit-app/app/__pycache__
+data/

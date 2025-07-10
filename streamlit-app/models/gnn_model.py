@@ -1,6 +1,6 @@
 # instance of gnn model
 from datetime import datetime
-
+import random
 import joblib
 
 from models.base_model import BaseModel
@@ -16,6 +16,8 @@ from torch_geometric.data import Data
 import polars as pl
 import logging
 
+logging.basicConfig(level=logging.WARNING)
+
 class GNNModel(BaseModel):
     def __init__(self, gnn_model_path:str, edge_index_path:str, stop_id_map_path:str, line_encoding_path:str, edge_list_path:str, scaler_gnn_path:str):
         print(line_encoding_path)
@@ -25,13 +27,6 @@ class GNNModel(BaseModel):
         self.line_encoding_path = line_encoding_path
         self.edge_list_path = edge_list_path
         self.scaler_gnn_path = scaler_gnn_path
-        self.line_mapping = None
-        self.model = None
-        self.state_dict = None
-        self.stop_id_map = None
-        self.edge_index = None
-        self.scaler = None
-        self.trainer_obj = None
         self.logger = logging.getLogger(__name__)
 
     def load(self, ):
@@ -53,29 +48,30 @@ class GNNModel(BaseModel):
 
     def prepare_input(self, start, end, line, date_input, time_input):
         if line not in self.line_mapping['line_name'].values:
-            raise ValueError(f"Gnn model can't predict for line {line}.")
+            raise ValueError(f"Gnn model can't predict for line {line}. Available lines: {self.line_mapping['line_name'].unique().tolist()}")
 
+        datetime_input = datetime.combine(date_input, time_input)
         data_prep_obj = DataPreparation(data_path="")
         row_dict = {
             "Dzien": date_input,
             "Linia": line,
-            "Zadanie": "",
-            "Lp przystanku": 1, #todo change
-            "Przystanek nazwa": start,
-            "Przystanek numer": 2169,
+            "Zadanie": "", # unimportant
+            "Lp przystanku": random.randint(1, 26),
+            "Przystanek nazwa": start, # unimportant
+            "Przystanek numer": 2169, # unimportant
             "Rozkladowy czas przyjazdu": datetime(2023, 1, 1, 4, 11, 0),
             "Rozkladowy czas odjazdu": datetime(2023, 1, 1, 4, 11, 0),
             "Rzeczywisty czas przyjazdu": datetime(2023, 1, 1, 4, 10, 7),
             "Rzeczywisty czas odjazdu": datetime(2023, 1, 1, 4, 10, 7),
-            "Rodzaj detekcji": 1,
-            "Primary Key": "a",
+            "Rodzaj detekcji": 1, # unimportant
+            "Primary Key": "a", # unimportant
             "stop_desc": start,
-            "stop_lat": 54.39869, # dodo change
+            "stop_lat": 54,
             "stop_lon": 18.67434,
-            "delay": 0,
-            "scheduled_trip_start": datetime(2023, 1, 1, 4, 11, 0,
-                                             ),
+            "delay": 0, # unimportant
+            "scheduled_trip_start": datetime_input,
         }
+
         df = pl.DataFrame([row_dict])
         self.logger.debug(f"Data loaded successfully., shape: {df.shape}")
         line_encodings = {row['line_name']: row['line_encoded'] for _, row in self.line_mapping.iterrows()}
@@ -92,7 +88,7 @@ class GNNModel(BaseModel):
 
     def predict(self, dataloader):
         out_df = self.trainer_obj.predict_with_debug(dataloader)
-        if out_df.empty:
+        if out_df.shape[0] == 0:
             return None
-
+        print(out_df["preds"].to_list()[0])
         return out_df["preds"].to_list()[0]
