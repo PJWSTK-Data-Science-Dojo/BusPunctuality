@@ -1,18 +1,21 @@
-# instance of xgb model (pycaret) or other source
-
-
 from models.base_model import BaseModel
+import json
+import numpy as np
 
 class XGBModel(BaseModel):
-    def __init__(self):
-       pass
+
+    def __init__(self, model_path, scaler_x_path, scaler_y_path, encoder_path, data_path):
+        self.model_path = model_path
+        self.scaler_x_path = scaler_x_path
+        self.scaler_y_path = scaler_y_path
+        self.encoder_path = encoder_path
+        self.data_path = data_path
 
     def load(self):
-        pass
+        self.loaded = True
 
-# TODO this method is invalid, it does not prepare input expected from fcnn model
-    def prepare_input(self):
-        pass
+    def prepare_input(self, start_stop, end_stop, line, date_input, time_input):
+        return []
 
-    def predict(self):
-       pass
+    def predict(self, features):
+        return 34.0  # Mocked delay in seconds

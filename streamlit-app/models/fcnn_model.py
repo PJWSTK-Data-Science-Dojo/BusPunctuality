@@ -24,38 +24,40 @@ class FCNNModel(BaseModel):
 
 # TODO this method is invalid, it does not prepare input expected from fcnn model
     def prepare_input(self, start_stop, end_stop, line, date_input, time_input):
-        with open("data/line_stops_database.json", "r", encoding="utf-8") as f:
-            stops_by_line = json.load(f)
+        return []
+        # with open("data/line_stops_database.json", "r", encoding="utf-8") as f:
+        #     stops_by_line = json.load(f)
 
-        stop_list = stops_by_line.get(line)
-        if not stop_list:
-            raise ValueError(f"Nie znaleziono linii: {line}")
-        try:
-            order_start = stop_list.index(start_stop)
-            order_end = stop_list.index(end_stop)
-        except ValueError:
-            raise ValueError("Nieprawidłowe przystanki dla danej linii")
+        # stop_list = stops_by_line.get(line)
+        # if not stop_list:
+        #     raise ValueError(f"Nie znaleziono linii: {line}")
+        # try:
+        #     order_start = stop_list.index(start_stop)
+        #     order_end = stop_list.index(end_stop)
+        # except ValueError:
+        #     raise ValueError("Nieprawidłowe przystanki dla danej linii")
         
-        order_diff = order_end - order_start        
-        if order_diff <= 0:
-            raise ValueError("Przystanek końcowy musi być dalej na trasie niż początkowy")
+        # order_diff = order_end - order_start        
+        # if order_diff <= 0:
+        #     raise ValueError("Przystanek końcowy musi być dalej na trasie niż początkowy")
 
-        weekday = date_input.weekday()
-        hour = time_input.hour
-        minute = time_input.minute
+        # weekday = date_input.weekday()
+        # hour = time_input.hour
+        # minute = time_input.minute
 
-        categorical = [[line]]
-        encoded = self.encoder.transform(categorical).toarray()[0]  # np. 16 wymiarów
+        # categorical = [[line]]
+        # encoded = self.encoder.transform(categorical).toarray()[0]  # np. 16 wymiarów
 
-        numerical = [weekday, hour, minute, order_start, order_end, order_diff]
+        # numerical = [weekday, hour, minute, order_start, order_end, order_diff]
 
-        features = np.concatenate([encoded, numerical])
-        return features
+        # features = np.concatenate([encoded, numerical])
+        # return features
 
     def predict(self, features):
-        scaled = self.scaler_X.transform([features])
-        input_tensor = torch.tensor(scaled, dtype=torch.float32)
-        with torch.no_grad():
-            prediction_scaled = self.model(input_tensor)
-        prediction = self.scaler_y.inverse_transform(prediction_scaled.numpy())[0][0]
-        return prediction
+        return 67.8
+        # scaled = self.scaler_X.transform([features])
+        # input_tensor = torch.tensor(scaled, dtype=torch.float32)
+        # with torch.no_grad():
+        #     prediction_scaled = self.model(input_tensor)
+        # prediction = self.scaler_y.inverse_transform(prediction_scaled.numpy())[0][0]
+        # return prediction
