@@ -34,21 +34,24 @@ def display_model_column(model_name, state_key):
     if state.get("status") == "loading":
         st.spinner(f"⏳ Obliczanie opóźnienia ({model_name})...")
     elif state.get("status") == "success":
-        delay_s = state['delay']
-        delay_min = round(delay_s / 60, 1)
+        total_seconds = state['delay']
+        minutes = int(total_seconds // 60)
+        seconds = int(total_seconds % 60)
+        delay_min = minutes + seconds / 60
         if delay_min > 5:
             bg_color = '#eb4d4b'
             text_color = '#dff9fb'
         elif delay_min > 1:
             bg_color = '#f9ca24'
-            text_color = '#535c68'
+            text_color = '#2f3640'
         else:
             bg_color = '#6ab04c'
-            text_color = '#535c68'
-
+            text_color = '#2f3640'
+        # Format display
+        time_str = f"{minutes} min {seconds} s" if minutes > 0 else f"{seconds} s"
         st.markdown(
             f"<div style='background-color:{bg_color}; color:{text_color}; padding:10px; border-radius:5px;'>"
-            f"Przewidywane opóźnienie: <strong>{delay_min} min</strong>"
+            f"Przewidywane opóźnienie: <br> <strong>{time_str}</strong>"
             "</div>",
             unsafe_allow_html=True
         )
@@ -58,6 +61,8 @@ def display_model_column(model_name, state_key):
     else:
         st.info("Kliknij 'Predict', aby rozpocząć obliczenia.")
 
+
+# Initialize session state for each model
 for model in ["GNN", "XGB", "FCNN"]:
     key = f"{model}_state"
     if key not in st.session_state:
@@ -77,17 +82,18 @@ time_input = st.time_input("O której?")
 if start == end and start != "":
     st.warning("🚫 Przystanki początkowy i końcowy nie mogą być takie same.")
 
-
+# Instantiate models
 fcnn_model = FCNNModel(**FCNN_PATHS)
 gnn_model  = GNNModel(**GNN_PATHS)
 xgb_model  = XGBModel(**XGB_PATHS)
 
-
+# Predict button
 if st.button("Predict") and start != end:
     predict_pipeline("GNN",  gnn_model,  start, end, line, date_input, time_input, "GNN_state")
     predict_pipeline("XGB",  xgb_model,  start, end, line, date_input, time_input, "XGB_state")
     predict_pipeline("FCNN", fcnn_model, start, end, line, date_input, time_input, "FCNN_state")
 
+# Display results section
 if start != end:
     datetime_str = datetime.combine(date_input, time_input).strftime("%Y-%m-%d %H:%M")
     st.subheader("Wyniki predykcji")
