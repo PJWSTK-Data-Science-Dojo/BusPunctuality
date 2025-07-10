@@ -1,6 +1,6 @@
 import os
 
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 MODEL_DIR = os.path.join(BASE_DIR, "fnn")
 GRAPH_NN_MODEL_DIR = os.path.join(BASE_DIR, "models\graph_nn\model_predict")
@@ -24,5 +24,4 @@ GNN_PATHS = {
     "scaler_gnn_path": os.path.join(GRAPH_NN_MODEL_DIR, "scaler.joblib"),
 
 }
-
 
